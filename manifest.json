@@ -1,0 +1,25 @@
+{
+    "manifest_version": 2,
+    "name": "Reorganize Grid Extension",
+    "version": "1.0",
+    "description": "Extension to reorganize video grid on YouTube",
+    "permissions": ["tabs", "http://*/*", "https://*/*"],
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": true
+    },
+    "browser_action": {
+      "default_popup": "popup.html"
+    },
+    "icons": {
+      "16": "icon.png"
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://www.youtube.com/*"],
+        "js": ["content.js"]
+      }
+    ]
+  }
+  
+  
