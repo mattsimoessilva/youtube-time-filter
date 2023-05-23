@@ -108,6 +108,7 @@ function hideVideosAfter2015() {
     const videoWrapper = document.createElement("div");
     videoWrapper.style.width = "calc(33.33% - 20px)";
     videoWrapper.style.marginBottom = "20px";
+    videoWrapper.style.marginTop = "20px";
   
     const videoCard = document.createElement("div");
     videoCard.style.width = "500px";
