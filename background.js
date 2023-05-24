@@ -13,6 +13,11 @@ function reorganizeVideoGrid(tabId) {
   }
 }
 
+// Função para reorganizar a grade de vídeos
+function reorganizeVideoGrid(tabId) {
+  sendMessageToContentScript(tabId, { action: "updateResults" });
+}
+
 // Listener para o evento 'message' vindo do popup.js
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "toggleReorganization") {
