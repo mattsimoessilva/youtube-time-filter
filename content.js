@@ -221,6 +221,7 @@ function detectLoadAndNewVideos() {
   if (isSearchResultsPage) {
     // Chamar hideVideosAfter2015() no load da página
     window.addEventListener("load", hideVideosAfter2015);
+    window.addEventListener("DOMContentLoaded", hideVideosAfter2015);
 
     // Configurar Mutation Observer para detectar o surgimento de novos elementos ytd-video-renderer
     const searchResultsContainer = document.getElementById("contents");
