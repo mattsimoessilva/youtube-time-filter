@@ -1,3 +1,10 @@
+const xhr = new XMLHttpRequest();
+xhr.open('GET', 'https://api.example.com/data', true);
+
+xhr.onerror = function() {
+ location.reload();
+};
+
 // Armazena o estado da reorganização
 let isReorganizationEnabled = false;
 
