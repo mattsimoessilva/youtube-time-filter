@@ -9,7 +9,7 @@ YouTube Time Filter is a Chrome extension that allows you to filter and discover
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/seu-usuario/seu-repo.git`.
+1. Clone the repository: `git clone https://github.com/mattsimoessilva/youtube-time-filter.git`.
 2. Open Google Chrome and navigate to `chrome://extensions`.
 3. Enable Developer mode (toggle switch in the top right corner).
 4. Click on "Load unpacked" and select the cloned repository folder.
