@@ -1,3 +1,8 @@
+// Verificar se é a página de resultado de pesquisa ou o player de vídeo
+var isSearchResultsPage = window.location.pathname == "/results";
+var isVideoPlayerPage = window.location.pathname == "/watch";
+var isMainPage = window.location.pathname == "/";
+
 const xhr = new XMLHttpRequest();
 xhr.open('GET', 'https://api.example.com/data', true);
 
@@ -33,12 +38,8 @@ function hideStuff() {
 function hideVideosAfter2015() {
   let videoElements = [];
 
-  // Verificar se é a página de resultado de pesquisa ou o player de vídeo
-  const isSearchResultsPage = window.location.pathname.startsWith("/results");
-  const isVideoPlayerPage = window.location.pathname.startsWith("/watch");
-
   if (isVideoPlayerPage) {
-    videoElements = Array.from(document.getElementsByTagName("ytd-miniplayer-compact-autoplay-renderer"));
+    videoElements = Array.from(document.getElementsByTagName("ytd-compact-video-renderer"));
   } else if (isSearchResultsPage) {
     hideStuff();
     videoElements = Array.from(document.getElementsByTagName("ytd-video-renderer"));
@@ -134,9 +135,11 @@ function hideVideosAfter2015() {
 
 function reorganizeVideoGrid() {
   const { hiddenVideos, visibleVideos } = hideVideosAfter2015();
+  const barContainer = document.getElementById("secondary");
   const gridContainer = document.querySelector("ytd-rich-grid-renderer");
 
-  if (gridContainer) {
+  if (!isVideoPlayerPage && visibleVideos.length > 0 && !isSearchResultsPage) {
+    console.log("EPA");
     gridContainer.innerHTML = "";
 
     const rowContainer = document.createElement("div");
@@ -160,6 +163,27 @@ function reorganizeVideoGrid() {
       rowContainer.appendChild(videoWrapper);
     });
   }
+  
+  if (isVideoPlayerPage && visibleVideos.length > 0) {
+    console.log("UEPA");
+    barContainer.innerHTML = "";
+
+    const listContainer = document.createElement("div"); // Create a container for the vertical list
+    barContainer.appendChild(listContainer); // Append the list container to the grid container
+
+    const totalVideos = visibleVideos.length + hiddenVideos.length;
+
+    visibleVideos.forEach((videoElement) => {
+      const videoWrapper = createVideoWrapper(videoElement);
+      listContainer.appendChild(videoWrapper); // Append each video to the list container
+    });
+
+    hiddenVideos.forEach((videoElement) => {
+      const videoWrapper = createVideoWrapper(videoElement);
+      listContainer.appendChild(videoWrapper); // Append each hidden video to the list container
+    });
+
+  }
 }
 
 function createVideoWrapper(videoElement) {
@@ -169,7 +193,7 @@ function createVideoWrapper(videoElement) {
   videoWrapper.style.marginTop = "20px";
 
   const videoCard = document.createElement("div");
-  videoCard.style.width = "100%";
+  videoCard.style.width = "400px";
   videoCard.appendChild(videoElement);
   videoWrapper.appendChild(videoCard);
 
@@ -251,7 +275,70 @@ function detectLoadAndNewVideos() {
   }
 }
 
+// Configuração do MutationObserver
+const observerConfig = { childList: true, subtree: true };
 
+// Função de callback para ser executada quando ocorrerem mutações
+const mutationCallback = function (mutationsList, observer) {
+  for (const mutation of mutationsList) {
+    if (mutation.type === "childList") {
+      const addedNodes = Array.from(mutation.addedNodes);
+      const compactVideoRenderers = addedNodes.filter(node =>
+        node.tagName && node.tagName.toLowerCase() === "ytd-compact-video-renderer"
+      );
+      const richGridMedia = addedNodes.filter(node =>
+        node.tagName && node.tagName.toLowerCase() === "ytd-rich-grid-media"
+      );
 
+      if (compactVideoRenderers.length > 0) {
+        console.log(window.location.pathname);
+        console.log("Os compacts apareceram!")
+        // Handle the appearance of ytd-compact-video-renderer elements here
+        reorganizeVideoGrid();
+        // You can perform actions or trigger functions when these elements appear.
+      }
+
+      if (richGridMedia.length > 0) {
+        console.log("Os rich apareceram!")
+        // Handle the appearance of ytd-compact-video-renderer elements here
+        reorganizeVideoGrid();
+        // You can perform actions or trigger functions when these elements appear.
+      }
+    }
+  }
+};
+
+// Cria o MutationObserver com a função de callback e a configuração
+const observer = new MutationObserver(mutationCallback);
+
+// Inicia a observação no documento inteiro (o corpo da página)
+observer.observe(document.documentElement, observerConfig);
+
+// Function to check if an element is an iframe
+function isIframe(element) {
+  return element.tagName === 'iframe';
+}
+
+// Function to observe mutations and check for iframes
+function observeIframes() {
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      for (const addedNode of mutation.addedNodes) {
+        if (isIframe(addedNode)) {
+          console.log("IPI");
+          // An iframe has appeared, call the reorganizeVideoGrid function
+          reorganizeVideoGrid();
+          return; // Stop observing after the first iframe is found
+        }
+      }
+    }
+  });
+
+  // Start observing the entire document for mutations
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+// Call the observeIframes function to start monitoring for iframes
+observeIframes();
 
 
