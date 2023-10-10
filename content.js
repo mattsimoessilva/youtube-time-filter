@@ -38,6 +38,10 @@ function hideStuff() {
 function hideVideosAfter2015() {
   let videoElements = [];
 
+  isSearchResultsPage = window.location.pathname == "/results";
+  isVideoPlayerPage = window.location.pathname == "/watch";
+  isMainPage = window.location.pathname == "/";
+
   if (isVideoPlayerPage) {
     videoElements = Array.from(document.getElementsByTagName("ytd-compact-video-renderer"));
   } else if (isSearchResultsPage) {
@@ -49,140 +53,119 @@ function hideVideosAfter2015() {
 
   console.log(videoElements);
 
-  const hiddenVideos = [];
   const visibleVideos = [];
 
   videoElements.forEach(videoElement => {
     const publishedDateElements = videoElement.querySelectorAll(".inline-metadata-item.style-scope.ytd-video-meta-block");
     const publishedDateElement = publishedDateElements[1];
-
+  
     if (publishedDateElement) {
       const publishedDate = publishedDateElement.innerText;
       console.log(publishedDate);
-
+  
       if (publishedDate.includes("ago")) {
-        if (publishedDate.includes("day")) {
-          const daysAgo = parseInt(publishedDate.match(/\d+/));
-          if (daysAgo < 30) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
-        } else if (publishedDate.includes("month")) {
-          const monthsAgo = parseInt(publishedDate.match(/\d+/));
-          if (monthsAgo < 12) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
-        } else if (publishedDate.includes("hour")) {
-          const hoursAgo = parseInt(publishedDate.match(/\d+/));
-          if (hoursAgo < 24) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
-        } else if (publishedDate.includes("minute")) {
-          const minutesAgo = parseInt(publishedDate.match(/\d+/));
-          if (minutesAgo < 60) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
-        } else if (publishedDate.includes("year")) {
+        if (publishedDate.includes("day") || publishedDate.includes("days")) {
+          videoElement.remove();
+        } else if (publishedDate.includes("month") || publishedDate.includes("months")) {
+          videoElement.remove();
+        } else if (publishedDate.includes("hour") || publishedDate.includes("hours")) {
+          videoElement.remove();
+        } else if (publishedDate.includes("minute") || publishedDate.includes("minutes")) {
+          videoElement.remove();
+        } else if (publishedDate.includes("year") || publishedDate.includes("years")) {
           const yearsAgo = parseInt(publishedDate.match(/\d+/));
           if (yearsAgo < 8) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
+            videoElement.remove();
+          } else if (yearsAgo >= 8) {
             visibleVideos.push(videoElement);
           }
-        } else if (publishedDate.includes("week")) {
-          const weeksAgo = parseInt(publishedDate.match(/\d+/));
-          if (weeksAgo < 5) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
-        } else if (publishedDate.includes("second")) {
-          const secondsAgo = parseInt(publishedDate.match(/\d+/));
-          if (secondsAgo < 60) {
-            videoElement.style.display = "none";
-            hiddenVideos.push(videoElement);
-          } else {
-            visibleVideos.push(videoElement);
-          }
+        } else if (publishedDate.includes("week") || publishedDate.includes("weeks")) {
+          videoElement.remove();
+        } else if (publishedDate.includes("second") || publishedDate.includes("seconds")) {
+          videoElement.remove();
         }
       } else {
         const publishedYear = parseInt(publishedDate.match(/\d+/));
         if (publishedYear > 2015) {
-          videoElement.style.display = "none";
-          hiddenVideos.push(videoElement);
+          videoElement.remove();
         } else {
           visibleVideos.push(videoElement);
         }
       }
     }
-  });
+  });  
 
-  return { hiddenVideos, visibleVideos };
+  return visibleVideos;
 }
 
 function reorganizeVideoGrid() {
-  const { hiddenVideos, visibleVideos } = hideVideosAfter2015();
+  const body = document.getElementsByTagName("body")[0];
+  body.style.visibility = "hidden";
+  if (window.location.pathname == "/" && document.getElementsByClassName("new-bar").length > 0){
+    console.log("hehe");
+    document.getElementsByClassName("new-bar")[0].remove();
+    body.style.visibility = "visible";
+  }
+  const visibleVideos = hideVideosAfter2015();
   const barContainer = document.getElementById("secondary");
   const gridContainer = document.querySelector("ytd-rich-grid-renderer");
 
-  if (!isVideoPlayerPage && visibleVideos.length > 0 && !isSearchResultsPage) {
+  isSearchResultsPage = window.location.pathname == "/results";
+  isVideoPlayerPage = window.location.pathname == "/watch";
+  isMainPage = window.location.pathname == "/";
+
+  if (!isVideoPlayerPage && !isSearchResultsPage) {
     console.log("EPA");
-    gridContainer.innerHTML = "";
+    
+    if (visibleVideos.length > 0 && visibleVideos.every(videoElement => videoElement.tagName.toLowerCase() === "ytd-rich-grid-media")) {
+      gridContainer.innerHTML = "";
 
-    const rowContainer = document.createElement("div");
-    rowContainer.style.display = "flex";
-    rowContainer.style.flexWrap = "wrap";
-    rowContainer.style.justifyContent = "space-between";
-    gridContainer.appendChild(rowContainer);
+      const rowContainer = document.createElement("div");
+      rowContainer.style.display = "flex";
+      rowContainer.style.flexWrap = "wrap";
+      rowContainer.style.justifyContent = "space-between";
+      gridContainer.appendChild(rowContainer);
 
-    const totalVideos = visibleVideos.length + hiddenVideos.length;
-    const numColumns = Math.max(Math.min(totalVideos, 3), 2);
+      const totalVideos = visibleVideos.length;
+      const numColumns = Math.max(Math.min(totalVideos, 3), 2);
 
-    visibleVideos.forEach((videoElement) => {
-      const videoWrapper = createVideoWrapper(videoElement);
-      videoWrapper.style.width = `calc(${100 / numColumns}% - 20px)`;
-      rowContainer.appendChild(videoWrapper);
-    });
+      visibleVideos.forEach((videoElement) => {
+        const videoWrapper = createVideoWrapper(videoElement);
+        videoWrapper.style.width = `calc(${100 / numColumns}% - 20px)`;
+        rowContainer.appendChild(videoWrapper);
+      });
 
-    hiddenVideos.forEach((videoElement) => {
-      const videoWrapper = createVideoWrapper(videoElement);
-      videoWrapper.style.width = `calc(${100 / numColumns}% - 20px)`;
-      rowContainer.appendChild(videoWrapper);
-    });
+    }
+
+    if (document.getElementsByClassName("new-bar").length == 0) {
+      body.style.visibility = "visible";
+    } else {
+      body.style.visibility = "hidden";
+    }
   }
   
-  if (isVideoPlayerPage && visibleVideos.length > 0) {
+  if (isVideoPlayerPage) {
     console.log("UEPA");
-    barContainer.innerHTML = "";
 
-    const listContainer = document.createElement("div"); // Create a container for the vertical list
-    barContainer.appendChild(listContainer); // Append the list container to the grid container
+    if (visibleVideos.length > 0 && visibleVideos.every(videoElement => videoElement.tagName.toLowerCase() === "ytd-compact-video-renderer")) {
+      const parentContainer = barContainer.parentNode; // Get the parent of barContainer
+      const listContainer = document.createElement("div"); // Create a container for the vertical list
+      listContainer.classList.add("new-bar");
+      
+      parentContainer.replaceChild(listContainer, barContainer); // Replace the old sidebar with the new one
+      
+      const totalVideos = visibleVideos.length;
+    
+      visibleVideos.forEach((videoElement) => {
+        const videoWrapper = createVideoWrapper(videoElement);
+        listContainer.appendChild(videoWrapper); // Append each video to the list container
+      });
+    
+    }    
 
-    const totalVideos = visibleVideos.length + hiddenVideos.length;
-
-    visibleVideos.forEach((videoElement) => {
-      const videoWrapper = createVideoWrapper(videoElement);
-      listContainer.appendChild(videoWrapper); // Append each video to the list container
-    });
-
-    hiddenVideos.forEach((videoElement) => {
-      const videoWrapper = createVideoWrapper(videoElement);
-      listContainer.appendChild(videoWrapper); // Append each hidden video to the list container
-    });
-
+    if (document.getElementsByClassName("new-bar").length > 0) {
+      body.style.visibility = "visible";
+    }
   }
 }
 
@@ -217,7 +200,7 @@ if (isReorganized) {
 // Manipula a mensagem recebida do popup.js
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "reorganize") {
-    const { hiddenVideos, visibleVideos } = hideVideosAfter2015();
+    const visibleVideos = hideVideosAfter2015();
     reorganizeVideoGrid();
     localStorage.setItem("reorganized", true);
     isReorganizationApplied = true;
@@ -301,7 +284,7 @@ const mutationCallback = function (mutationsList, observer) {
       if (richGridMedia.length > 0) {
         console.log("Os rich apareceram!")
         // Handle the appearance of ytd-compact-video-renderer elements here
-        reorganizeVideoGrid();
+        reorganizeVideoGrid(); 
         // You can perform actions or trigger functions when these elements appear.
       }
     }
