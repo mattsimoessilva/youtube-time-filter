@@ -169,7 +169,7 @@ function createVideoWrapper(videoElement) {
   videoWrapper.style.marginTop = "20px";
 
   const videoCard = document.createElement("div");
-  videoCard.style.width = "500px";
+  videoCard.style.width = "100%";
   videoCard.appendChild(videoElement);
   videoWrapper.appendChild(videoCard);
 
