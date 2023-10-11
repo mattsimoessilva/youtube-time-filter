@@ -3,6 +3,15 @@ var isSearchResultsPage = window.location.pathname == "/results";
 var isVideoPlayerPage = window.location.pathname == "/watch";
 var isMainPage = window.location.pathname == "/";
 
+// Define the configuration for the MutationObserver
+const observerConfig = {
+  childList: true, // Observe changes to the child elements of the target node
+  subtree: true, // Observe changes in the entire subtree of the target node
+  attributes: true, // Observe changes to attributes of the target node
+  characterData: true, // Observe changes to the data contained in the target node
+  // Other configuration options as needed
+};
+
 const xhr = new XMLHttpRequest();
 xhr.open('GET', 'https://api.example.com/data', true);
 
@@ -113,6 +122,11 @@ function reorganizeVideoGrid() {
     document.getElementsByClassName("new-bar")[0].remove();
     body.style.visibility = "visible";
   }
+  if (window.location.pathname == "/" && document.getElementsByClassName("results-bar").length > 0){
+    console.log("hehe");
+    document.getElementsByClassName("results-bar")[0].remove();
+    body.style.visibility = "visible";
+  }
   var visibleVideos = hideVideosAfter2015();
   const barContainer = document.getElementById("secondary");
   const gridContainer = document.querySelector("ytd-rich-grid-renderer");
@@ -164,6 +178,7 @@ function reorganizeVideoGrid() {
       const parentContainer = barContainer.parentNode; // Get the parent of barContainer
       const listContainer = document.createElement("div"); // Create a container for the vertical list
       listContainer.classList.add("new-bar");
+      listContainer.id = "secondary";
       
       parentContainer.replaceChild(listContainer, barContainer); // Replace the old sidebar with the new one
       
@@ -181,20 +196,8 @@ function reorganizeVideoGrid() {
     
     }    
 
-    if (visibleVideos.length > 0 && visibleVideos.every(videoElement => videoElement.id.toLowerCase() === "nothingfound")) {
-      const parentContainer = barContainer.parentNode; // Get the parent of barContainer
-      const listContainer = document.createElement("div"); // Create a container for the vertical list
-      listContainer.classList.add("new-bar");
-      
-      parentContainer.replaceChild(listContainer, barContainer); // Replace the old sidebar with the new one
-      
-      const totalVideos = visibleVideos.length;
+  
     
-      visibleVideos.forEach((videoElement) => {
-        const videoWrapper = createVideoWrapper(videoElement);
-        listContainer.appendChild(videoWrapper); // Append each video to the list container
-      });
-    }
 
     if (document.getElementsByClassName("new-bar").length > 0) {
       body.style.visibility = "visible";
@@ -225,23 +228,6 @@ function reorganizeVideoGrid() {
       });
     
     }   
-    
-    if (visibleVideos.length > 0 && visibleVideos.every(videoElement => videoElement.id.toLowerCase() === "nothingfound")) {
-      console.log("NENE")
-      const parentContainer = resultsBar.parentNode; // Get the parent of barContainer
-      const listContainer = document.createElement("div"); // Create a container for the vertical list
-      listContainer.classList.add("results-bar");
-      
-      parentContainer.replaceChild(listContainer, resultsBar); // Replace the old sidebar with the new one
-      
-      const totalVideos = visibleVideos.length;
-    
-      visibleVideos.forEach((videoElement) => {
-        const videoWrapper = createResultVideoWrapper(videoElement);
-        listContainer.appendChild(videoWrapper); // Append each video to the list container
-      });
-    
-    }
 
     if (document.getElementsByClassName("results-bar").length > 0) {
       body.style.visibility = "visible";
